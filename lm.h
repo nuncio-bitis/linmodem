@@ -3,6 +3,7 @@
 #include <string.h>
 #include <math.h>
 #include <assert.h>
+#include <stdint.h>
 
 #include "dsp.h"
 
@@ -97,7 +98,7 @@ struct sm_state {
 
     unsigned int serial_buf;
     int serial_cnt;
-    
+
     unsigned int serial_tx_buf;
     int serial_tx_cnt;
 
@@ -174,7 +175,7 @@ void line_simulate(void);
 struct LineModelState;
 
 struct LineModelState *line_model_init(void);
-void line_model(struct LineModelState *s, 
+void line_model(struct LineModelState *s,
                 s16 *output1, const s16 *input1,
                 s16 *output2, const s16 *input2,
                 int nb_samples);
@@ -203,7 +204,7 @@ enum lm_at_state_type {
 struct lm_at_state {
     char at_line[256];
     int at_line_ptr;
-    int at_state; 
+    int at_state;
     struct sm_state *sm; /* corresponding modem state */
 };
 

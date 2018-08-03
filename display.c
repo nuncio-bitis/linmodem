@@ -1,6 +1,6 @@
-/* 
+/*
  * X11 interface for linmodem
- * 
+ *
  * Copyright (c) 2000 Fabrice Bellard.
  *
  * This code is released under the GNU General Public License version
@@ -83,11 +83,11 @@ int lm_display_init(void)
     hint.height = size_y;
     hint.flags = PPosition | PSize;
 
-    /* Make the window */
-    if (!XMatchVisualInfo(display, screen, 16, TrueColor, &vinfo)) {
-        printf("A 16 bit visual is need by this program\n");
-        return -1;
-    }
+    // /* Make the window */
+    // if (!XMatchVisualInfo(display, screen, 16, TrueColor, &vinfo)) {
+    //     printf("A 16 bit visual is need by this program\n");
+    //     return -1;
+    // }
 
     window = XCreateSimpleWindow(display,
                                  DefaultRootWindow(display),
@@ -144,22 +144,22 @@ void printf_at(int x, int y, char *fmt, ...)
 {
     va_list ap;
     char buf[1024];
-    
+
     va_start(ap, fmt);
 
     vsnprintf(buf, sizeof(buf), fmt, ap);
-    
+
     XSetFont(display, gc, xfont->fid);
 
     XSetForeground(display, gc, bg);
-    XFillRectangle(display, window, gc, 
-                   x * font_xsize, y * font_ysize, 
+    XFillRectangle(display, window, gc,
+                   x * font_xsize, y * font_ysize,
                    font_xsize * strlen(buf), font_ysize);
-                   
+
     XSetForeground(display, gc, fg);
-    XDrawString(display, window, gc, x * font_xsize, (y + 1) * font_ysize - 1, 
+    XDrawString(display, window, gc, x * font_xsize, (y + 1) * font_ysize - 1,
                 buf, strlen(buf));
-    
+
     va_end(ap);
 }
 
@@ -172,13 +172,13 @@ void printf_at(int x, int y, char *fmt, ...)
 void draw_graph(char *title,
                 int x1, int y1, int w, int h,
                 float xmin, float xmax, float ymin, float ymax,
-                int flags, float (*calc_func)(float)) 
+                int flags, float (*calc_func)(float))
 {
     int i, yy, xx;
     float x, y;
     int ly;
     float tab[1024];
-    
+
     /* auto scale */
     for(i=0;i<w;i++) {
         x = ((float)i / (float)(w-1)) * (xmax - xmin) + xmin;
@@ -201,21 +201,21 @@ void draw_graph(char *title,
 
     XSetForeground(display, gc, bg);
     XFillRectangle(display, window, gc, x1, y1, w, h);
-    
+
     XSetForeground(display, gc, RGB(255, 0, 0));
     XDrawRectangle(display, window, gc, x1, y1, w, h);
-    
+
     /* axis */
     XSetForeground(display, gc, RGB(0, 255, 0));
     if (xmin <= 0.0 && 0.0 <= xmax) {
         xx = (int)rint(((0.0 - xmin) / (xmax - xmin)) * (w-1)) + x1;
-        XDrawLine(display, window, gc, 
+        XDrawLine(display, window, gc,
                           xx, y1, xx, y1 + h - 1);
     }
-    
+
     if (ymin <= 0.0 && 0.0 <= ymax) {
         yy = y1 + h - 1 - (int)rint(((0.0 - ymin) / (ymax - ymin)) * (h-1));
-        XDrawLine(display, window, gc, 
+        XDrawLine(display, window, gc,
                           x1, yy, x1 + w - 1, yy);
     }
 
@@ -226,10 +226,10 @@ void draw_graph(char *title,
         if (y >= ymin && y <= ymax) {
             yy = y1 + h - 1 - (int)rint(((y - ymin) / (ymax - ymin)) * (h-1));
             if (ly >= 0) {
-                XDrawLine(display, window, gc, 
+                XDrawLine(display, window, gc,
                           i - 1, ly, i, yy);
             } else {
-                XDrawPoint(display, window, gc, 
+                XDrawPoint(display, window, gc,
                            i, yy);
             }
             ly = yy;
@@ -241,11 +241,11 @@ void draw_graph(char *title,
 
     /* title */
     XSetForeground(display, gc, RGB(0, 255, 0));
-    
+
     printf_at((x1+font_xsize-1) / font_xsize,
               (y1+font_ysize-1) / font_ysize,
               "%s - ymin=%6.3e ymax=%6.3e", title, ymin, ymax);
-             
+
 }
 
 /***************************************************/
@@ -306,26 +306,26 @@ void draw_samples(int channel)
     sample_channel = channel;
 
     draw_graph("Sample",
-               0, 0, QAM_SIZE, QAM_SIZE/2,  
-               0.0, NB_SAMPLES - 1, 0.0, 0.0, 
+               0, 0, QAM_SIZE, QAM_SIZE/2,
+               0.0, NB_SAMPLES - 1, 0.0, 0.0,
                DG_AUTOSCALE_YMAX | DG_AUTOSCALE_YMIN,
                calc_sample);
-    
+
     if (!sample_hamming_init) {
         calc_hamming(sample_hamming, NB_SAMPLES);
         sample_hamming_init = 1;
     }
-    
+
     for(i=0;i<NB_SAMPLES;i++) {
         sample_fft[i].re = sample_mem[channel][i] * sample_hamming[i];
         sample_fft[i].im = 0;
     }
-    
+
     fft_calc(sample_fft, NB_SAMPLES, 0);
-    
+
     draw_graph("Spectral power",
-               0, QAM_SIZE/2, QAM_SIZE, QAM_SIZE/2,  
-               0.0, NB_SAMPLES/2 - 1, 0.0, 0.0, 
+               0, QAM_SIZE/2, QAM_SIZE, QAM_SIZE/2,
+               0.0, NB_SAMPLES/2 - 1, 0.0, 0.0,
                DG_AUTOSCALE_YMAX, calc_sample_pow);
 }
 
@@ -335,12 +335,12 @@ void lm_dump_sample(int channel, float val)
     sample_mem[channel][sample_pos[channel]] = val;
     if (++sample_pos[channel] == NB_SAMPLES) {
         sample_pos[channel] = 0;
-        
+
         if ((disp_state == DISP_MODE_SAMPLE &&
              channel == CHANNEL_SAMPLE) ||
             (disp_state == DISP_MODE_SAMPLESYNC &&
              channel == CHANNEL_SAMPLESYNC)) {
-            
+
             draw_samples(channel);
         }
     }
@@ -369,10 +369,10 @@ void lm_dump_eye(int channel, float time, float val)
     if (time >= 1.0)
         time -= 1.0;
     x = (int)(time * QAM_SIZE);
-    
+
     XSetForeground(display, gc, RGB(255, 255, 255));
     if (x > last_eye_x[channel] && 0) {
-        XDrawLine(display, window, gc, 
+        XDrawLine(display, window, gc,
                   last_eye_x[channel], last_eye_y[channel], x, y);
     } else {
         XDrawPoint(display, window, gc, x, y);
@@ -416,24 +416,24 @@ float calc_eq_phase(float x)
 void lm_dump_equalizer(s32 eq_filter1[][2], int norm, int size)
 {
     int i;
-    
+
     if (disp_state != DISP_MODE_EQUALIZER)
         return;
-    
+
     if (++eq_count == 1) {
         eq_count = 0;
         eq_filter = eq_filter1;
         eq_norm = norm;
 
         draw_graph("Eqz real",
-                   0, 0, QAM_SIZE, QAM_SIZE/4,  
-                   0.0, size - 1, -1.5, 1.5, 
+                   0, 0, QAM_SIZE, QAM_SIZE/4,
+                   0.0, size - 1, -1.5, 1.5,
                    0,
                    calc_eq_re);
 
         draw_graph("Eqz imag",
-                   0, QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,  
-                   0.0, size - 1, -1.5, 1.5, 
+                   0, QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,
+                   0.0, size - 1, -1.5, 1.5,
                    0,
                    calc_eq_im);
 
@@ -445,25 +445,25 @@ void lm_dump_equalizer(s32 eq_filter1[][2], int norm, int size)
                 eq_fft[i].re = eq_fft[i].im = 0;
             }
         }
-        
+
         if (EQ_FFT_SIZE == 144) {
             complex eq_fft1[144];
 
             slow_fft(eq_fft1, eq_fft, EQ_FFT_SIZE, 0);
             for(i=0;i<EQ_FFT_SIZE;i++)
                 eq_fft[i] = eq_fft1[i];
-            
+
         } else {
             fft_calc(eq_fft, EQ_FFT_SIZE, 0);
         }
 
         draw_graph("Eqz spec pow",
-                   0, 2*QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,  
+                   0, 2*QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,
                    0.0, EQ_FFT_SIZE - 1, 0.0, 0.0,
                    DG_AUTOSCALE_YMAX, calc_eq_pow);
 
         draw_graph("Eqz spec phase",
-                   0, 3*QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,  
+                   0, 3*QAM_SIZE/4, QAM_SIZE, QAM_SIZE/4,
                    0.0, EQ_FFT_SIZE - 1, -M_PI, M_PI,
                    0, calc_eq_phase);
     }
@@ -489,7 +489,7 @@ static void set_state(int state)
 
     minx = ((QAM_SIZE + font_xsize) / font_xsize) + 1;
     miny = ((QAM_SIZE + font_ysize) / font_ysize);
-    
+
     disp_state = state;
 
     XSetForeground(display, gc, bg);
@@ -507,7 +507,7 @@ static void set_state(int state)
         break;
     }
     printf_at(minx, 0, "Mode: %s", mode_str[disp_state]);
-    
+
     for(i=0;i<NB_MODES;i++) {
         printf_at(1 + 15 * i, miny, "F%d:%s", i + 1, mode_str[i]);
     }

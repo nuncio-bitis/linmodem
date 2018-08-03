@@ -5,7 +5,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
+
+//#define USE_LINUX_SOUNDCARD
+#ifdef USE_LINUX_SOUNDCARD
 #include <linux/soundcard.h>
+#endif // USE_LINUX_SOUNDCARD
 
 #include "lm.h"
 
@@ -63,7 +67,7 @@ void soundcard_modem(void)
         FD_SET(hw_handle, &rfds);
         FD_SET(tty_handle, &rfds);
         FD_ZERO(&wfds);
-        if (!out_buf_flushed) 
+        if (!out_buf_flushed)
             FD_SET(hw_handle, &wfds);
         if (sm_size(&dce->rx_fifo) > 0)
             FD_SET(tty_handle, &wfds);
@@ -125,6 +129,7 @@ void soundcard_modem(void)
 
 static int soundcard_open(struct lm_interface_state *s)
 {
+#ifdef USE_LINUX_SOUNDCARD
     int tmp, err;
     /* init the sound card to 8000 Hz, Mono, 16 bits */
 
@@ -140,18 +145,18 @@ static int soundcard_open(struct lm_interface_state *s)
     if (err < 0) {
         perror("SNDCTL_DSP_SETDUPLEX");
     }
-    
+
     /* buffer size */
     tmp=(NB_FRAGMENTS << 16) | FRAGMENT_BITS;
     err=ioctl(s->handle, SNDCTL_DSP_SETFRAGMENT, &tmp);
     if (err < 0) {
         perror("set fragment");
     }
-    
+
     tmp=AFMT_S16_LE;
     err=ioctl(s->handle,SNDCTL_DSP_SETFMT,&tmp);
     if (err < 0) goto error;
-    
+
     /* should be last */
     tmp = 8000;
     err=ioctl(s->handle,SNDCTL_DSP_SPEED,&tmp);
@@ -161,6 +166,9 @@ static int soundcard_open(struct lm_interface_state *s)
  error:
     close(s->handle);
     return -1;
+#else
+    return 0;
+#endif // USE_LINUX_SOUNDCARD
 }
 
 static void soundcard_close(struct lm_interface_state *s)
@@ -187,7 +195,7 @@ static void soundcard_main_loop(struct lm_interface_state *s)
 
 }
 
-struct sm_hw_info sm_hw_soundcard = 
+struct sm_hw_info sm_hw_soundcard =
 {
     soundcard_open,
     soundcard_close,

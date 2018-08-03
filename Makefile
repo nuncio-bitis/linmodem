@@ -1,7 +1,9 @@
 # uncomment to use X11 debug interface
-#USE_X11=y
+USE_X11=y
 
-CFLAGS= -O2 -Wall -g
+INCLUDE_DIRS += -I /opt/X11/include
+
+CFLAGS= -O2 -Wall -g $(INCLUDE_DIRS)
 LDFLAGS= -g
 OBJS= lm.o lmsim.o lmreal.o lmsoundcard.o serial.o atparser.o \
       dsp.o fsk.o v8.o v21.o v23.o dtmf.o \
@@ -14,7 +16,8 @@ PROG= lm
 
 ifdef USE_X11
 OBJS += display.o
-LDFLAGS += -L/usr/X11R6/lib -lX11
+#LDFLAGS += -L/usr/X11R6/lib -lX11
+LDFLAGS += -L/usr/X11/lib -lX11
 else
 OBJS += nodisplay.o
 endif
